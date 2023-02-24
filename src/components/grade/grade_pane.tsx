@@ -46,7 +46,6 @@ const renderGrade = ({ question, submissions, update_num_to_save }: GradePanePro
     }, [submissions, question.remove_punctuation, question])
 
     const updateMaxPoints = useCallback((e: any) => {
-        //setMaxPoints(e.target.value)
         question.max_points = e.target.value;
         setUpdateCount((updateCount) => updateCount + 1)
     }, [question])
@@ -153,7 +152,7 @@ const renderGrade = ({ question, submissions, update_num_to_save }: GradePanePro
                                 <label>Max Points</label>
                                 <input class="form-control" autocorrect='off' name='maxPoints' placeholder='max' type='number' value={question.max_points} onChange={updateMaxPoints} />
                                 <label>Remove Punctuation</label>
-                                <input name='removePunctuation' type='checkbox' value={question.remove_punctuation} onChange={updateRemovePunctuation} />
+                                <input name='removePunctuation' type='checkbox' checked={question.remove_punctuation} onChange={updateRemovePunctuation} />
                             </div>
                         </form>
                     </div>
