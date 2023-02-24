@@ -20,14 +20,20 @@ const renderGrade = ({ question, submissions, update_num_to_save }: GradePanePro
     if (question.max_points === undefined) {
         question.max_points = 1
     }
-    const [maxPoints, setMaxPoints] = useState(question.max_points)
+
+    if (question.remove_punctuation === undefined) {
+        question.remove_punctuation = false
+    }
     const [updateCount, setUpdateCount] = useState(0) // This is a hack so that we get light screen updates when a grade is selected for a response
 
     const [responses_for_question, ordered_responses] = useMemo((): [{ [key: string]: Submission[] }, string[]] => {
         var answer_to_submission: { [key: string]: Submission[] } = {}
         submissions.forEach((s) => {
             if (!(question.id in s.questions)) return;
-            const text = s.questions[question.id].content
+            let text = s.questions[question.id].content.replace(/\s/g, " ").toLowerCase()
+            if (question.remove_punctuation) {
+                text = text.replace(/\.|,|\"|\'|/g, "")
+            }
             if (text in answer_to_submission) {
                 answer_to_submission[text].push(s)
             } else {
@@ -37,11 +43,17 @@ const renderGrade = ({ question, submissions, update_num_to_save }: GradePanePro
 
         const ordered_keys = Object.keys(answer_to_submission).sort((a, b) => answer_to_submission[b].length - answer_to_submission[a].length)
         return [answer_to_submission, ordered_keys]
-    }, [submissions, question])
+    }, [submissions, question.remove_punctuation, question])
 
     const updateMaxPoints = useCallback((e: any) => {
-        setMaxPoints(e.target.value)
+        //setMaxPoints(e.target.value)
         question.max_points = e.target.value;
+        setUpdateCount((updateCount) => updateCount + 1)
+    }, [question])
+
+    const updateRemovePunctuation = useCallback((e: any) => {
+        question.remove_punctuation = e.target.checked;
+        setUpdateCount((updateCount) => updateCount + 1)
     }, [question])
 
     const groupInfo = useMemo(() => {
@@ -100,7 +112,7 @@ const renderGrade = ({ question, submissions, update_num_to_save }: GradePanePro
             values.push(Math.round((question.max_points / 4.0) * i / alignment) * alignment)
         }
         return values
-    }, [maxPoints, question])
+    }, [question.max_points, question])
 
     /* Compute statistics */
 
@@ -139,7 +151,9 @@ const renderGrade = ({ question, submissions, update_num_to_save }: GradePanePro
                         <form>
                             <div class="form-group">
                                 <label>Max Points</label>
-                                <input class="form-control" autocorrect='off' name='maxPoints' placeholder='max' type='number' value={maxPoints} onChange={updateMaxPoints} />
+                                <input class="form-control" autocorrect='off' name='maxPoints' placeholder='max' type='number' value={question.max_points} onChange={updateMaxPoints} />
+                                <label>Remove Punctuation</label>
+                                <input name='removePunctuation' type='checkbox' value={question.remove_punctuation} onChange={updateRemovePunctuation} />
                             </div>
                         </form>
                     </div>
