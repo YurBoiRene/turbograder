@@ -87,3 +87,8 @@ typings/
 
 # Electron-Forge
 out/
+
+.yarn/
+.yarnrc.yml
+
+tags
